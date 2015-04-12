@@ -1,0 +1,19 @@
+application: polar-office-91214
+version: 1
+runtime: python27
+threadsafe: true
+api_version: 1
+
+handlers:
+  # Endpoints handler: this must be /_ah/spi for Endpoints, NOT /_ah/api!
+ - url: /_ah/spi/.*
+   script: carpooling_api.APPLICATION
+
+libraries:
+  - name: pycrypto
+    version: latest
+  - name: endpoints
+    version: 1.0
+  - name: ssl 
+    version: latest 
+
