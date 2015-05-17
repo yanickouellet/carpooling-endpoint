@@ -91,6 +91,7 @@ class CarpoolingApi (remote.Service):
 
     def TryToMatchOffer(self, offer):
         requests = RunRequest.query(RunRequest.matched == False)
+
         for request in requests:
             fromDist = self.ComputeDist(request.fromCoord, offer.fromCoord)
             toDist = self.ComputeDist(request.toCoord, offer.toCoord)

@@ -9,7 +9,7 @@ class RunRequest(EndpointsModel):
     hour = ndb.IntegerProperty()
     minute = ndb.IntegerProperty()
     dayOfWeek = ndb.IntegerProperty()
-    date = ndb.DateTimeProperty()
+    date = ndb.DateProperty()
     ponctual = ndb.BooleanProperty()
     matched = ndb.BooleanProperty()
 
@@ -23,7 +23,7 @@ class RunOffer(EndpointsModel):
     hour = ndb.IntegerProperty()
     minute = ndb.IntegerProperty()
     dayOfWeek = ndb.IntegerProperty()
-    date = ndb.DateTimeProperty()
+    date = ndb.DateProperty()
     ponctual = ndb.BooleanProperty()
     places = ndb.IntegerProperty()
     remainingPlaces = ndb.IntegerProperty()
