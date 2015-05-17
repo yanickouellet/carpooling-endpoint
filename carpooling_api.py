@@ -6,9 +6,7 @@ import endpoints
 from protorpc import remote
 from google.appengine.ext import ndb
 
-from models import RunRequest
-from models import RunOffer
-from models import Match
+from models import *
 
 from geopy import geocoders
 from geopy.distance import vincenty
@@ -56,7 +54,13 @@ class CarpoolingApi (remote.Service):
 
     @RunRequest.query_method(path='requests', name='runrequest.list', user_required=True)
     def RunRequestList(self, query):
-        return query.filter(RunRequest.user == endpoints.get_current_user())
+        requests = query.filter(RunRequest.user == endpoints.get_current_user())
+        for request in requests:
+            if request.match is not None:
+                request.test = request.match.get()
+
+        return requests
+
 
     @RunOffer.method(path='offers', http_method='POST',
                      name='runoffer.insert', user_required=True)
@@ -134,9 +138,11 @@ class CarpoolingApi (remote.Service):
         match.put()
 
         request.matched = True
+        request.match = offer.key
         request.put()
 
         offer.remainingPlaces -= 1
+        offer.matches.append(request.key)
         offer.put()
 
     def ComputeDist(self, a, b):
