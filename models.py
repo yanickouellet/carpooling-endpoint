@@ -16,6 +16,8 @@ class RunRequest(EndpointsModel):
     fromCoord = ndb.GeoPtProperty()
     toCoord = ndb.GeoPtProperty()
 
+    user = ndb.UserProperty()
+
 
 class RunOffer(EndpointsModel):
     fromAddress = ndb.StringProperty()
@@ -31,6 +33,8 @@ class RunOffer(EndpointsModel):
 
     fromCoord = ndb.GeoPtProperty()
     toCoord = ndb.GeoPtProperty()
+
+    user = ndb.UserProperty()
 
 
 class Match(EndpointsModel):

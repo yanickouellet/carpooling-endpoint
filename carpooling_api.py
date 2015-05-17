@@ -15,12 +15,17 @@ from geopy.distance import vincenty
 
 package = 'Carpooling'
 
+WEB_CLIENT_ID = '167365633595-uqt0ar2ft41ppjto2ce0kpvfdnnqglp8.apps.googleusercontent.com'
+ANDROID_CLIENT_ID = '167365633595-tnm1k6olahbu3tr65auu1fpqvdblk3a9.apps.googleusercontent.com'
+ANDROID_AUDIENCE = WEB_CLIENT_ID
 
-@endpoints.api(name='carpooling', version='v1')
+@endpoints.api(name='carpooling', version='v1', 
+                allowed_client_ids=[WEB_CLIENT_ID, ANDROID_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID],
+                audiences=[WEB_CLIENT_ID])
 class CarpoolingApi (remote.Service):
 
     @RunRequest.method(path='request', http_method='POST',
-                       name='runrequest.insert')
+                       name='runrequest.insert', user_required=True)
     def RunRequestInsert(self, run_request):
         geocoder = geocoders.Nominatim()
 
@@ -41,6 +46,7 @@ class CarpoolingApi (remote.Service):
         run_request.toCoord = ndb.GeoPt(location.latitude, location.longitude)
 
         run_request.matched = False
+        run_request.user = endpoints.get_current_user()
 
         run_request.put()
 
@@ -48,12 +54,12 @@ class CarpoolingApi (remote.Service):
 
         return run_request
 
-    @RunRequest.query_method(path='requests', name='runrequest.list')
+    @RunRequest.query_method(path='requests', name='runrequest.list', user_required=True)
     def RunRequestList(self, query):
-        return query
+        return query.filter(RunRequest.user == endpoints.get_current_user())
 
     @RunOffer.method(path='offers', http_method='POST',
-                     name='runoffer.insert')
+                     name='runoffer.insert', user_required=True)
     def RunOfferInsert(self, run_offer):
         geocoder = geocoders.Nominatim()
 
@@ -74,6 +80,7 @@ class CarpoolingApi (remote.Service):
         run_offer.toCoord = ndb.GeoPt(location.latitude, location.longitude)
 
         run_offer.remainingPlaces = run_offer.places
+        run_offer.user = endpoints.get_current_user()
 
         run_offer.put()
 
@@ -81,18 +88,22 @@ class CarpoolingApi (remote.Service):
 
         return run_offer
 
-    @RunOffer.query_method(path='offer', name='runoffer.list')
+    @RunOffer.query_method(path='offer', name='runoffer.list', user_required=True)
     def RunOfferList(self, query):
-        return query
+        return query.filter(RunOffer.user == endpoints.get_current_user())
 
     @Match.query_method(path='matches', name='match.list')
     def MatchList(self, query):
         return query
 
     def TryToMatchOffer(self, offer):
+        user = endpoints.get_current_user()
         requests = RunRequest.query(RunRequest.matched == False)
 
         for request in requests:
+            if request.user == user:
+                continue
+
             fromDist = self.ComputeDist(request.fromCoord, offer.fromCoord)
             toDist = self.ComputeDist(request.toCoord, offer.toCoord)
 
@@ -104,9 +115,13 @@ class CarpoolingApi (remote.Service):
 
 
     def TryToMatchRequest(self, request):
+        user = endpoints.get_current_user()
         offers = RunOffer.query(RunOffer.remainingPlaces >= 1)
 
         for offer in offers:
+            if offer.user == user:
+                continue
+
             fromDist = self.ComputeDist(request.fromCoord, offer.fromCoord)
             toDist = self.ComputeDist(request.toCoord, offer.toCoord)
 
